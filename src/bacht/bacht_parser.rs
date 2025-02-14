@@ -6,18 +6,7 @@ use nom::{
 };
 use regex::{Regex};
 
-/// The BachT AST used to represent agents
-#[derive(Debug, PartialEq)]
-pub(crate) enum Expr<'b> {
-    // BachtAstEmptyAgent(),
-
-    // bacht_ast_primitive(primitive, token),
-    BachtAstPrimitive(&'b str, &'b str),
-
-    // bacht_ast_agent(operator, agent_i, agent_ii),
-    // uses box to avoid recursive type see: [RustBook](https://doc.rust-lang.org/book/ch15-01-box.html#enabling-recursive-types-with-boxes)
-    BachtAstAgent(&'b str, Box<Expr<'b>>, Box<Expr<'b>>)
-}
+use super::bacht_data::Expr;
 
 /// Parses a token from the input string using a regular expression.
 /// Note that the token must start with a lowercase letter and can contain any number of letters, digits, and underscores.
@@ -132,7 +121,7 @@ fn simple_agent(input: &str) -> IResult<&str, Expr> {
 }
 
 fn parenthesized_agent(input: &str) -> IResult<&str, Expr> {
-    delimited(tag("("), composition_choice, tag(")")).parse(input)
+    delimited(tag("("), agent, tag(")")).parse(input)
 }
 
 

@@ -1,5 +1,3 @@
-use std::io::Write;
-
 pub mod bacht;
 
 fn main() {
@@ -15,7 +13,11 @@ fn main() {
         if input == "exit" {break;}
         let res = bacht::bacht_parser::parse(&input);
         match res {
-            Ok(ag) => println!("{:?}", ag),
+            Ok(ag) => {
+                match bacht::bacht_simulator::bacht_exec_all(&mut store, ag) {
+                    true => println!("Success!"),
+                    false => println!("Simulator cannot execute the given agent")
+                }},
             Err(e) => println!("{}", e)
         }
         input.clear();
