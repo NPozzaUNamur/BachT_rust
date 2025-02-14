@@ -1,7 +1,7 @@
 pub mod bacht;
 
 fn main() {
-    println!("\nWelcome the BachT interpreter cli 25.2.0 !\nYou can try this command: (tell(bach);get(rust))||(get(bach);tell(rust))\nRun 'exit' to leave the interpreter\n");use std::io::Write;
+    println!("\nWelcome the BachT interpreter cli 25.2.1 !\nYou can try this command: (tell(bach);get(rust))||(get(bach);tell(rust))\nRun 'exit' to leave the interpreter\n");use std::io::Write;
     print!("> ");
     std::io::stdout().flush().unwrap();
 

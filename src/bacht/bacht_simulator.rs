@@ -3,88 +3,68 @@ use super::bacht_data::Expr;
 use super::bacht_data::Expr::*;
 
 pub(crate) fn run_one<'b>(blackboard: &mut dyn BachTStoreTrait, agent: Expr<'b>) -> (bool, Expr<'b>) {
-
     match agent {
-        BachtAstPrimitive(prim, token) => {
-            if exec_primitive(blackboard, prim, token) {
-                (true, BachtAstEmptyAgent())
-            } else {
-                (false, agent)
-            }
-        },
-
-        BachtAstAgent(";", ag_i, ag_ii) => {
-            match run_one(blackboard, *ag_i) { // *ag_i is a dereference
-                (false, ag_i) => (false, BachtAstAgent(";", Box::new(ag_i), ag_ii)), //ag_i shadowing to get back ownership and recreate agent
-                (true, BachtAstEmptyAgent()) => (true, *ag_ii),
-                (true, ag_cont) => (true, BachtAstAgent(";", Box::new(ag_cont), ag_ii))
-            }
-        },
-
-        BachtAstAgent("||", ag_i, ag_ii) => {
-            let branch_choice = rand::random::<bool>();
-            if branch_choice {
-
-                match run_one(blackboard, *ag_i) {
-                    (false, ag_i) => {
-                        match run_one(blackboard, *ag_ii) {
-                            (false, ag_ii) => (false, BachtAstAgent("||", Box::new(ag_i), Box::new(ag_ii))),
-                            (true, BachtAstEmptyAgent()) => (true, ag_i),
-                            (true, ag_cont) => (true, BachtAstAgent("||", Box::new(ag_i), Box::new(ag_cont)))
-                        }
-                    },
-                    (true, BachtAstEmptyAgent()) => (true, *ag_ii),
-                    (true, ag_cont) => (true, BachtAstAgent("||", Box::new(ag_cont), ag_ii))
-                }
-
-            } else {
-                match run_one(blackboard, *ag_ii) {
-                    (false, ag_ii) => {
-                        match run_one(blackboard, *ag_i) {
-                            (false, ag_i) => (false, BachtAstAgent("||", Box::new(ag_i), Box::new(ag_ii))),
-                            (true, BachtAstEmptyAgent()) => (true, ag_ii),
-                            (true, ag_cont) => (true, BachtAstAgent("||", Box::new(ag_cont), Box::new(ag_ii)))
-                        }
-                    },
-                    (true, BachtAstEmptyAgent()) => (true, *ag_i),
-                    (true, ag_cont) => (true, BachtAstAgent("||", ag_i, Box::new(ag_cont)))
-                }
-            }
-        },
-
-        BachtAstAgent("+", ag_i, ag_ii) => {
-            let branch_choice = rand::random::<bool>();
-            if branch_choice {
-
-                match run_one(blackboard, *ag_i) {
-                    (false, ag_i) => {
-                        match run_one(blackboard, *ag_ii) {
-                            (false, ag_ii) => (false, BachtAstAgent("+", Box::new(ag_i), Box::new(ag_ii))),
-                            (true, BachtAstEmptyAgent()) => (true, BachtAstEmptyAgent()),
-                            (true, ag_cont) => (true, ag_cont)
-                        }
-                    },
-                    (true, BachtAstEmptyAgent()) => (true, BachtAstEmptyAgent()),
-                    (true, ag_cont) => (true, ag_cont)
-                }
-
-            } else {
-                match run_one(blackboard, *ag_ii) {
-                    (false, ag_ii) => {
-                        match run_one(blackboard, *ag_i) {
-                            (false, ag_i) => (false, BachtAstAgent("+", Box::new(ag_i), Box::new(ag_ii))),
-                            (true, BachtAstEmptyAgent()) => (true, BachtAstEmptyAgent()),
-                            (true, ag_cont) => (true, ag_cont)
-                        }
-                    },
-                    (true, BachtAstEmptyAgent()) => (true, BachtAstEmptyAgent()),
-                    (true, ag_cont) => (true, ag_cont)
-                }
-            }
-        },
-
+        BachtAstPrimitive(prim, token) => run_one_primitive(blackboard, prim, token),
+        BachtAstAgent(";", ag_i, ag_ii) => run_one_sequence(blackboard, *ag_i, *ag_ii),
+        BachtAstAgent("||", ag_i, ag_ii) => run_one_parallel(blackboard, *ag_i, *ag_ii),
+        BachtAstAgent("+", ag_i, ag_ii) => run_one_choice(blackboard, *ag_i, *ag_ii),
         _ => panic!("Unknown agent")
+    }
+}
 
+fn run_one_primitive<'b>(blackboard: &mut dyn BachTStoreTrait, prim: &'b str, token: &'b str) -> (bool, Expr<'b>) {
+    if exec_primitive(blackboard, prim, token) {
+        (true, BachtAstEmptyAgent())
+    } else {
+        (false, BachtAstPrimitive(prim, token))
+    }
+}
+
+fn run_one_sequence<'b>(blackboard: &mut dyn BachTStoreTrait, ag_i: Expr<'b>, ag_ii: Expr<'b>) -> (bool, Expr<'b>) {
+    match run_one(blackboard, ag_i) {
+        (false, ag_i) => (false, BachtAstAgent(";", Box::new(ag_i), Box::new(ag_ii))), //ag_i shadowing to get back ownership and recreate agent
+        (true, BachtAstEmptyAgent()) => (true, ag_ii),
+        (true, ag_cont) => (true, BachtAstAgent(";", Box::new(ag_cont), Box::new(ag_ii)))
+    }
+}
+
+fn run_one_parallel<'b>(blackboard: &mut dyn BachTStoreTrait, ag_i: Expr<'b>, ag_ii: Expr<'b>) -> (bool, Expr<'b>) {
+    let branch_choice = rand::random::<bool>();
+    if branch_choice {parallel_branch_exec(blackboard, ag_i, ag_ii)}
+    else {parallel_branch_exec(blackboard, ag_ii, ag_i)}
+}
+
+fn parallel_branch_exec<'b>(blackboard: &mut dyn BachTStoreTrait, ag_i: Expr<'b>, ag_ii: Expr<'b>) -> (bool, Expr<'b>) {
+    match run_one(blackboard, ag_i) {
+        (false, ag_i) => {
+            match run_one(blackboard, ag_ii) {
+                (false, ag_ii) => (false, BachtAstAgent("||", Box::new(ag_i), Box::new(ag_ii))),
+                (true, BachtAstEmptyAgent()) => (true, ag_i),
+                (true, ag_cont) => (true, BachtAstAgent("||", Box::new(ag_i), Box::new(ag_cont)))
+            }
+        },
+        (true, BachtAstEmptyAgent()) => (true, ag_ii),
+        (true, ag_cont) => (true, BachtAstAgent("||", Box::new(ag_cont), Box::new(ag_ii)))
+    }
+}
+
+fn run_one_choice<'b>(blackboard: &mut dyn BachTStoreTrait, ag_i: Expr<'b>, ag_ii: Expr<'b>) -> (bool, Expr<'b>) {
+    let branch_choice = rand::random::<bool>();
+    if branch_choice {choice_branch_exec(blackboard, ag_i, ag_ii)}
+    else {choice_branch_exec(blackboard, ag_ii, ag_i)}
+}
+
+fn choice_branch_exec<'b>(blackboard: &mut dyn BachTStoreTrait, ag_i: Expr<'b>, ag_ii: Expr<'b>) -> (bool, Expr<'b>) {
+    match run_one(blackboard, ag_i) {
+        (false, ag_i) => {
+            match run_one(blackboard, ag_ii) {
+                (false, ag_ii) => (false, BachtAstAgent("+", Box::new(ag_i), Box::new(ag_ii))),
+                (true, BachtAstEmptyAgent()) => (true, BachtAstEmptyAgent()),
+                (true, ag_cont) => (true, ag_cont)
+            }
+        },
+        (true, BachtAstEmptyAgent()) => (true, BachtAstEmptyAgent()),
+        (true, ag_cont) => (true, ag_cont)
     }
 }
 
