@@ -90,11 +90,11 @@ pub(crate) fn bacht_exec_all(blackboard: &mut dyn BachTStoreTrait, agent: Expr) 
     is_executed
 }
 
-fn exec_primitive(blackboard: &mut dyn BachTStoreTrait, primitive: &str, token: & str) -> bool {
+fn exec_primitive(blackboard: &mut dyn BachTStoreTrait, primitive: &str, token: &str) -> bool {
     match primitive {
-        "tell" => blackboard.tell(token.parse().unwrap()),
+        "tell" => blackboard.tell(token.into()),
         "ask" => blackboard.ask(token),
-        "get" => blackboard.get(token.parse().unwrap()),
+        "get" => blackboard.get(token.into()),
         "nask" => blackboard.nask(token),
         _ => panic!("Unknown primitive")
     }
