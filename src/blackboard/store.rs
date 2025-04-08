@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use mockall::automock;
 
 #[automock]
-pub trait BachTStoreTrait {
+pub trait StoreTrait {
     fn tell(&mut self, token: Box<str>) -> bool;
     fn ask(&mut self, token: &str) -> bool;
     fn get(&mut self, token: Box<str>) -> bool;
@@ -15,12 +15,12 @@ pub trait BachTStoreTrait {
 /// **@summary** - The BachTStore struct is a store that keeps track of the number of occurrences of a token
 ///
 /// Using HashMap, see [reference](https://doc.rust-lang.org/std/collections/struct.HashMap.html).
-pub struct BachTStore {
+pub struct Store {
     the_store: HashMap<Box<str>,u32>
 }
 
 
-impl BachTStoreTrait for BachTStore {
+impl StoreTrait for Store {
 
     /// **@summary** - It adds one occurrence of the token to the store
     ///
@@ -93,10 +93,10 @@ impl BachTStoreTrait for BachTStore {
     }
 }
 
-impl BachTStore {
-    /// Create a new BachTStore
-    pub(crate) fn new() -> BachTStore {
-        BachTStore {
+impl Store {
+    /// Create a new Store
+    pub(crate) fn new() -> Store {
+        Store {
             the_store: HashMap::new()
         }
     }
@@ -121,7 +121,7 @@ mod tests {
     // tell section
     #[test]
     fn the_store_should_be_able_to_tell_whatever_its_data_state() {
-        let mut store = BachTStore::new(); // empty store
+        let mut store = Store::new(); // empty store
         let res_without_data = store.tell("token".into());
 
         store.the_store = HashMap::from([("token".into(), 1)]); // store with data
@@ -132,7 +132,7 @@ mod tests {
 
     #[test]
     fn the_store_should_add_a_new_token_when_tell_if_doesnt_exists() {
-        let mut store = BachTStore::new();
+        let mut store = Store::new();
         let res = store.tell("token".into());
         assert!(res);
         assert!(store.the_store.contains_key("token"));
@@ -140,7 +140,7 @@ mod tests {
 
     #[test]
     fn the_store_should_increment_token_when_tell_if_it_exists() {
-        let mut store = BachTStore { // instanced with data
+        let mut store = Store { // instanced with data
             the_store: HashMap::from([("token".into(), 1)])
         };
         let res = store.tell("token".into());
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     fn the_store_should_not_allow_max_occurrence_overflow() {
-        let mut store = BachTStore {
+        let mut store = Store {
             the_store: HashMap::from([("token".into(), u32::MAX)])
         };
         let res = store.tell("token".into());
@@ -162,7 +162,7 @@ mod tests {
 
     #[test]
     fn the_store_should_be_able_to_ask_if_one_or_more_occurrence_of_token() {
-        let mut store = BachTStore {
+        let mut store = Store {
             the_store: HashMap::from([("token".into(), 1)])
         };
         let res = store.ask("token");
@@ -172,7 +172,7 @@ mod tests {
 
     #[test]
     fn the_store_should_not_be_able_to_ask_if_zero_occurrence_of_token() {
-        let mut store = BachTStore {
+        let mut store = Store {
             the_store: HashMap::from([("token".into(), 0)])
         };
         let res = store.ask("token");
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn the_store_should_not_be_able_to_ask_if_no_occurrence_of_token() {
-        let mut store = BachTStore::new();
+        let mut store = Store::new();
         let res = store.ask("token");
         assert!(!res);
         assert!(!store.the_store.contains_key("token"));
@@ -192,7 +192,7 @@ mod tests {
 
     #[test]
     fn the_store_should_be_able_to_get_one_occurrence_of_token() {
-        let mut store = BachTStore {
+        let mut store = Store {
             the_store: HashMap::from([("token".into(), 1)])
         };
         let res = store.get("token".into());
@@ -202,7 +202,7 @@ mod tests {
 
     #[test]
     fn the_store_should_not_be_able_to_get_if_zero_occurrence_of_token() {
-        let mut store = BachTStore {
+        let mut store = Store {
             the_store: HashMap::from([("token".into(), 0)])
         };
         let res = store.get("token".into());
@@ -212,7 +212,7 @@ mod tests {
 
     #[test]
     fn the_store_should_not_be_able_to_get_if_no_occurrence_of_token() {
-        let mut store = BachTStore::new();
+        let mut store = Store::new();
         let res = store.get("token".into());
         assert!(!res);
     }
@@ -221,7 +221,7 @@ mod tests {
 
     #[test]
     fn the_store_should_be_able_to_nask_if_zero_occurrence_of_token() {
-        let mut store = BachTStore {
+        let mut store = Store {
             the_store: HashMap::from([("token".into(), 0)])
         };
         let res = store.nask("token");
@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn the_store_should_be_able_to_nask_if_no_occurrence_of_token() {
-        let mut store = BachTStore::new();
+        let mut store = Store::new();
         let res = store.nask("token");
         assert!(res);
         assert!(!store.the_store.contains_key("token"));
@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     fn the_store_should_not_be_able_to_nask_if_one_or_more_occurrence_of_token() {
-        let mut store = BachTStore {
+        let mut store = Store {
             the_store: HashMap::from([("token".into(), 1)])
         };
         let res = store.nask("token");
@@ -251,7 +251,7 @@ mod tests {
 
     #[test]
     fn the_store_should_be_able_to_clear_its_data() {
-        let mut store = BachTStore {
+        let mut store = Store {
             the_store: HashMap::from([("token".into(), 1)])
         };
         store.clear_store();
@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn the_store_should_be_able_to_print_its_data() {
-        let store = BachTStore {
+        let store = Store {
             the_store: HashMap::from([
                 ("tameImpala".into(), 5),
                 ("daftPunk".into(), u32::MAX),
