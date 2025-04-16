@@ -4,10 +4,39 @@ use std::sync::{Arc, Mutex};
 
 #[automock]
 pub trait StoreTrait {
+
+    /// **@summary** - It adds one occurrence of the token to the store
+    ///
+    /// **@param** token: &str - The token to add to the store
+    ///
+    /// **@returns** - Always true
+    ///
+    /// Nbr of occurrences of the token is encoded using u32. So it ignores incrementation if it reaches the u32's max value.
+    /// See [reference](https://doc.rust-lang.org/std/collections/hash_map/enum.Entry.html).
     fn tell(&self, token: Box<str>) -> bool;
+
+    /// **@summary** - It checks if the token is in the store
+    ///
+    /// **@param** token: &str - The token to check in the store
+    ///
+    /// **@returns** - true if the token is in the store, false otherwise
     fn ask(&self, token: &str) -> bool;
+
+    /// **@summary** - It checks if the token is in the store and removes one occurrence of it
+    ///
+    /// **@param** token: &str - The token to check in the store
+    ///
+    /// **@returns** - true if the token is in the store, false otherwise
     fn get(&self, token: Box<str>) -> bool;
+
+    /// **@summary** - It checks if the token is absent from the store
+    ///
+    /// **@param** token: &str - The token to check in the store
+    ///
+    /// **@returns** - true if the token is absent from the store, false if it is present
     fn nask(&self, token: &str) -> bool;
+
+    /// **@summary** - It clears the store
     fn clear_store(&self);
     fn print_store(&self);
 }
@@ -23,14 +52,6 @@ pub(crate) struct Store {
 
 impl StoreTrait for Store {
 
-    /// **@summary** - It adds one occurrence of the token to the store
-    ///
-    /// **@param** token: &str - The token to add to the store
-    ///
-    /// **@returns** - Always true
-    ///
-    /// Nbr of occurrences of the token is encoded using u32. So it ignores incrementation if it reaches the u32's max value.
-    /// See [reference](https://doc.rust-lang.org/std/collections/hash_map/enum.Entry.html).
     fn tell(&self, token: Box<str>) -> bool {
         self.the_store.lock().unwrap().entry(token).and_modify(|nbr_occurrence| {
             *nbr_occurrence = Self::safe_inc(*nbr_occurrence);
@@ -38,11 +59,6 @@ impl StoreTrait for Store {
         true
     }
 
-    /// **@summary** - It checks if the token is in the store
-    ///
-    /// **@param** token: &str - The token to check in the store
-    ///
-    /// **@returns** - true if the token is in the store, false otherwise
     fn ask(&self, token: &str) -> bool {
         let unlock_store = self.the_store.lock().unwrap();
         if !unlock_store.contains_key(token) {
@@ -52,11 +68,6 @@ impl StoreTrait for Store {
         }
     }
 
-    /// **@summary** - It checks if the token is in the store and removes one occurrence of it
-    ///
-    /// **@param** token: &str - The token to check in the store
-    ///
-    /// **@returns** - true if the token is in the store, false otherwise
     fn get(&self, token: Box<str>) -> bool {
         let mut res = false;
 
@@ -69,11 +80,6 @@ impl StoreTrait for Store {
         res
     }
 
-    /// **@summary** - It checks if the token is absent from the store
-    ///
-    /// **@param** token: &str - The token to check in the store
-    ///
-    /// **@returns** - true if the token is absent from the store, false if it is present
     fn nask(&self, token: &str) -> bool {
         let unlock_store = self.the_store.lock().unwrap();
         if !unlock_store.contains_key(token) {
@@ -83,7 +89,6 @@ impl StoreTrait for Store {
         }
     }
 
-    /// **@summary** - It clears the store
     fn clear_store(&self) {
         self.the_store.lock().unwrap().clear();
     }
