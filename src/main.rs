@@ -1,5 +1,6 @@
 pub mod interpreter;
 mod blackboard;
+mod test;
 
 use std::io::Write;
 

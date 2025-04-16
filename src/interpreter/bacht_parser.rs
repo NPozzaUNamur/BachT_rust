@@ -154,6 +154,11 @@ pub(crate) fn parse(input: &str) -> Result<Expr, Err<Error<&str>>> {
     parse_agent(input)
 }
 
+
+/// ===============
+/// |    TESTS    |
+/// ===============
+
 #[cfg(test)]
 mod tests {
     use super::*;

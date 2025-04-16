@@ -101,6 +101,10 @@ fn exec_primitive(blackboard: &mut dyn StoreTrait, primitive: &str, token: &str)
 }
 
 
+/// ===============
+/// |    TESTS    |
+/// ===============
+
 #[cfg(test)]
 mod tests {
     use mockall::Sequence;
