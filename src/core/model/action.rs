@@ -1,6 +1,5 @@
 
-#[derive(Debug)]
-pub(crate) enum Action {
+pub enum Action {
     Tell(Box<str>),
     Ask(Box<str>),
     Nask(Box<str>),

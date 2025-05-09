@@ -4,6 +4,11 @@ use std::sync::{Arc, Mutex};
 
 #[automock]
 pub trait StoreTrait {
+    
+    /// **@summary** - The constructor of the Store
+    /// 
+    /// **@returns** - The Store instance
+    fn new() -> Self;
 
     /// **@summary** - It adds one occurrence of the token to the store
     ///
@@ -39,18 +44,26 @@ pub trait StoreTrait {
     /// **@summary** - It clears the store
     fn clear_store(&self);
     fn print_store(&self);
+    
+    fn clone(&self) -> Self;
 }
 
 
 /// **@summary** - The BachTStore struct is a store that keeps track of the number of occurrences of a token
 ///
 /// Using HashMap, see [reference](https://doc.rust-lang.org/std/collections/struct.HashMap.html).
-pub(crate) struct Store {
+pub struct Store {
     the_store: Arc<Mutex<HashMap<Box<str>, u32>>>
 }
 
 
 impl StoreTrait for Store {
+
+    fn new() -> Store {
+        Store {
+            the_store: Arc::from(Mutex::new(HashMap::new()))
+        }
+    }
 
     fn tell(&self, token: Box<str>) -> bool {
         self.the_store.lock().unwrap().entry(token).and_modify(|nbr_occurrence| {
@@ -100,15 +113,15 @@ impl StoreTrait for Store {
         }
         print!("\n");
     }
+    
+    fn clone(&self) -> Self {
+        Store {
+            the_store: Arc::clone(&self.the_store)
+        }
+    }
 }
 
 impl Store {
-    /// Create a new Store
-    pub(crate) fn new() -> Store {
-        Store {
-            the_store: Arc::from(Mutex::new(HashMap::new()))
-        }
-    }
 
     /// Create a new store with predefined data
     pub(crate) fn new_with_data(data: HashMap<Box<str>, u32>) -> Store {

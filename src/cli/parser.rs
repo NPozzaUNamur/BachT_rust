@@ -6,7 +6,7 @@ use nom::{
 };
 use regex::{Regex};
 
-use super::bacht_data::Expr;
+use crate::model::data::Expr;
 
 /// Parses a token from the input string using a regular expression.
 /// Note that the token must start with a lowercase letter and can contain any number of letters, digits, and underscores.

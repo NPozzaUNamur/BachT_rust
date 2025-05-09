@@ -1,7 +1,15 @@
 [package]
 name = "BachT_rust"
-version = "25.2.1"
+version = "25.5.0"
 edition = "2021"
+
+[[bin]]
+name = "bach_core"
+path = "src/core/main.rs"
+
+[[bin]]
+name = "bach_cli"
+path = "src/cli/main.rs"
 
 [dependencies]
 nom = "=8.0.0"

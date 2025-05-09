@@ -1,6 +1,6 @@
 /// The BachT AST used to represent agents
 #[derive(Debug, PartialEq, Clone)]
-pub(crate) enum Expr<'b> {
+pub enum Expr<'b> {
     BachtAstEmptyAgent(),
 
     // bacht_ast_primitive(primitive, token),
